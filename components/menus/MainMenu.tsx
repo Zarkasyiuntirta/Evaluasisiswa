@@ -152,7 +152,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, students }) => {
     if (!studentToDisplay) {
         return (
              <div>
-                <h1 className="text-4xl font-bold text-white mb-8 drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]">Main Menu</h1>
+                <h1 className="text-4xl font-bold text-white mb-8 drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]">Menu Utama</h1>
                 <p className="text-gray-400">No student data available.</p>
             </div>
         );
@@ -160,13 +160,12 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, students }) => {
     
     const summaryScore = calculateSummaryScore(studentToDisplay);
     const rank = rankings.get(studentToDisplay.id) || 0;
-    const examAverage = calculateExamAverage(studentToDisplay.exams);
     const taskScore = calculateTaskScore(studentToDisplay.tasks);
 
     return (
         <div className="h-full flex flex-col gap-8">
             <div>
-                <h1 className="text-4xl font-bold text-white mb-8 drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]">Main Menu</h1>
+                <h1 className="text-4xl font-bold text-white mb-8 drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]">Menu Utama</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Side: Student Profile */}
@@ -213,14 +212,23 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, students }) => {
 
                     {/* Right Side: Charts */}
                     <div className="lg:col-span-2 space-y-8">
-                        <StatCard title="Exam Average">
-                            <div className="flex items-center">
-                                <p className="text-3xl font-bold text-white mr-4 w-16 text-right">{examAverage}</p>
-                                <div className="w-full bg-gray-700/50 rounded-full h-4">
-                                    <div 
-                                        className="bg-gradient-to-r from-cyan-500 to-blue-500 h-4 rounded-full"
-                                        style={{ width: `${examAverage}%` }}
-                                    ></div>
+                        <StatCard title="Exam Scores">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+                                <div>
+                                    <p className="text-xs text-gray-400 uppercase">Mid Sem 1</p>
+                                    <p className="text-3xl font-bold text-white">{studentToDisplay.exams.mid1}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400 uppercase">Final Sem 1</p>
+                                    <p className="text-3xl font-bold text-white">{studentToDisplay.exams.final1}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400 uppercase">Mid Sem 2</p>
+                                    <p className="text-3xl font-bold text-white">{studentToDisplay.exams.mid2}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-400 uppercase">Final Sem 2</p>
+                                    <p className="text-3xl font-bold text-white">{studentToDisplay.exams.final2}</p>
                                 </div>
                             </div>
                         </StatCard>

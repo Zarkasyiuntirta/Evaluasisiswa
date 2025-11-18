@@ -20,11 +20,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, students, onUpdateStudents,
 
   const menuItems = useMemo(() => {
     const allMenus: { id: MenuType; label: string; icon: FC<{className?: string}> }[] = [
-      { id: 'main', label: 'Main Menu', icon: HomeIcon },
-      { id: 'absenteeism', label: 'Absenteeism', icon: ClipboardListIcon },
-      { id: 'exam', label: 'Exam', icon: AcademicCapIcon },
-      { id: 'proactiveness', label: 'Proactiveness', icon: SparklesIcon },
-      { id: 'task', label: 'Task', icon: DocumentTextIcon },
+      { id: 'main', label: 'Menu Utama', icon: HomeIcon },
+      { id: 'absenteeism', label: 'Daftar Hadir', icon: ClipboardListIcon },
+      { id: 'exam', label: 'Nilai Ujian', icon: AcademicCapIcon },
+      { id: 'proactiveness', label: 'Proaktif', icon: SparklesIcon },
+      { id: 'task', label: 'Tugas', icon: DocumentTextIcon },
     ];
     if (user.role === 'student') {
       return allMenus.filter(menu => menu.id === 'main');

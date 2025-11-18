@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Student } from '../../types';
 import Table3D, { TableRow3D, TableCell } from '../common/Table3D';
@@ -40,7 +39,7 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ students, onUpdateStudents }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-white drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]">Tasks</h1>
+        <h1 className="text-4xl font-bold text-white drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]">Tugas</h1>
         <div>
             {!isEditing && <button onClick={() => setIsEditing(true)} className="mr-4 px-4 py-2 font-bold text-white bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg hover:from-yellow-400 hover:to-orange-400 transform hover:scale-105 transition-all">Revise</button>}
             {isEditing && <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg hover:from-cyan-400 hover:to-blue-400 transform hover:scale-105 transition-all">Submit</button>}
@@ -56,10 +55,10 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ students, onUpdateStudents }) => {
                         <TableCell><p className="font-semibold">{student.name}</p></TableCell>
                         <TableCell><p className="text-gray-400">{student.nim}</p></TableCell>
                         <TableCell>
-                            {isEditing ? <input type="number" value={student.tasks.selesai} onChange={(e) => handleInputChange(student.id, e.target.value)} className="w-20 bg-gray-700/50 p-1 rounded" max={TOTAL_TASKS}/> : student.tasks.selesai}
+                            {isEditing ? <input type="number" value={student.tasks.selesai} onChange={(e) => handleInputChange(student.id, e.target.value)} className="w-20 bg-gray-700/50 p-1 rounded text-white" max={TOTAL_TASKS}/> : <p className="text-gray-400">{student.tasks.selesai}</p>}
                         </TableCell>
-                        <TableCell>{incomplete}</TableCell>
-                        <TableCell>{TOTAL_TASKS}</TableCell>
+                        <TableCell><p className="text-gray-400">{incomplete}</p></TableCell>
+                        <TableCell><p className="text-gray-400">{TOTAL_TASKS}</p></TableCell>
                         <TableCell><p className="font-bold text-lg text-cyan-300">{calculateTaskScore(student.tasks)}</p></TableCell>
                     </TableRow3D>
                 );
