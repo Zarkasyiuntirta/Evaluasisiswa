@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Futuristic Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes rotate-in {
+        0% {
+          transform: rotateY(90deg) scale(0.5);
+          opacity: 0;
+        }
+        100% {
+          transform: rotateY(0deg) scale(1);
+          opacity: 1;
+        }
+      }
+      .animate-rotate-in {
+        animation: rotate-in 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
