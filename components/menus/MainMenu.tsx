@@ -1,7 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import { User, Student } from '../../types';
 import { calculateSummaryScore, calculateExamAverage, calculateTaskScore } from '../../utils/calculations';
-import { TOTAL_MEETINGS } from '../../constants';
 
 interface MainMenuProps {
   user: User;
@@ -9,74 +9,200 @@ interface MainMenuProps {
 }
 
 // Reusable component for stat cards/charts
+// Updated to ensure title is centered and width is full for proper positioning
 const StatCard: React.FC<{title: string, children: React.ReactNode, className?: string}> = ({title, children, className}) => (
     <div className={`bg-black/20 backdrop-blur-md rounded-2xl border border-cyan-400/20 p-6 ${className}`}>
-        <h3 className="text-sm text-cyan-300 uppercase tracking-widest mb-4">{title}</h3>
+        <h3 className="text-sm text-cyan-300 uppercase tracking-widest mb-4 text-center w-full">{title}</h3>
         {children}
     </div>
 );
 
-// Proactiveness Radar Chart Component
-const ProactivenessRadar: React.FC<{ proactiveness: Student['proactiveness'] }> = ({ proactiveness }) => {
-    const size = 200;
-    const center = size / 2;
-    const maxVal = TOTAL_MEETINGS > 0 ? TOTAL_MEETINGS : 15; // Use 15 as a fallback if TOTAL_MEETINGS is 0
-
-    const calculatePoint = (value: number, angle: number, radiusScale: number) => {
-        const radius = (value / maxVal) * (center * 0.8) * radiusScale;
-        const x = center + radius * Math.cos(angle);
-        const y = center + radius * Math.sin(angle);
-        return `${x},${y}`;
-    };
-
-    const angles = [
-        -Math.PI / 2, // Bertanya (Top)
-        (Math.PI * 7) / 6, // Menjawab (Bottom-left)
-        -Math.PI / 6, // Menambahkan (Bottom-right)
-    ];
-
-    const dataPoints = [
-        proactiveness.bertanya,
-        proactiveness.menjawab,
-        proactiveness.menambahkan
-    ].map((val, i) => calculatePoint(val, angles[i], 1)).join(' ');
-
-    const axisPoints = [1, 2, 3].map((_, i) => calculatePoint(maxVal, angles[i], 1));
+// Helper to render a single layer of the pie chart ring
+const PieRingLayer: React.FC<{ 
+    data: { value: number, color: string, label: string }[], 
+    radius: number, 
+    total: number, 
+    opacity?: number, 
+    brightness?: number 
+}> = ({ data, radius, total, opacity = 1, brightness = 100 }) => {
+    const circumference = 2 * Math.PI * radius;
+    let accumulatedPercentage = 0;
 
     return (
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-            {/* Background grid lines */}
-            <g opacity="0.3">
-                {[0.25, 0.5, 0.75, 1].map(scale => (
-                    <polygon
-                        key={scale}
-                        points={[1,2,3].map((_, i) => calculatePoint(maxVal, angles[i], scale)).join(' ')}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" style={{transform: 'rotate(-90deg)'}}>
+            <circle cx="50" cy="50" r={radius} stroke="transparent" strokeWidth="10" fill="none" />
+            {data.map((slice, index) => {
+                if (slice.value === 0) return null;
+                const percentage = (slice.value / total) * 100;
+                const offset = circumference - (percentage / 100) * circumference;
+                const rotation = (accumulatedPercentage / 100) * 360;
+                accumulatedPercentage += percentage;
+                return (
+                    <circle
+                        key={index}
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        stroke={slice.color}
+                        strokeWidth="10"
                         fill="none"
-                        stroke="rgb(34 211 238)"
-                        strokeWidth="1"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={offset}
+                        transform={`rotate(${rotation} 50 50)`}
+                        strokeLinecap="butt"
+                        style={{ filter: `brightness(${brightness}%)`, opacity }}
                     />
-                ))}
-            </g>
-
-            {/* Axes */}
-            <g opacity="0.5">
-                {axisPoints.map((point, i) => <line key={i} x1={center} y1={center} x2={point.split(',')[0]} y2={point.split(',')[1]} stroke="rgb(107 114 128)" strokeWidth="1" />)}
-            </g>
-             {/* Axis Labels */}
-            <text x={center} y={15} fill="#e5e7eb" fontSize="12" textAnchor="middle">Bertanya</text>
-            <text x={40} y={size - 10} fill="#e5e7eb" fontSize="12" textAnchor="middle">Menjawab</text>
-            <text x={size - 40} y={size - 10} fill="#e5e7eb" fontSize="12" textAnchor="middle">Menambahkan</text>
-
-            {/* Data Polygon */}
-            <polygon
-                points={dataPoints}
-                fill="rgba(0, 255, 255, 0.4)"
-                stroke="rgb(34 211 238)"
-                strokeWidth="2"
-            />
+                );
+            })}
         </svg>
     );
+}
+
+// New 3D Pie Chart component for Proactiveness
+const Proactiveness3DPieChart: React.FC<{ proactiveness: Student['proactiveness'] }> = ({ proactiveness }) => {
+    const { bertanya, menjawab, menambahkan } = proactiveness;
+    const total = bertanya + menjawab + menambahkan;
+
+    if (total === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center text-center h-full">
+                 <div className="relative w-40 h-40 flex items-center justify-center">
+                    <svg className="absolute w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" stroke="rgba(107, 114, 128, 0.3)" strokeWidth="10" fill="none" />
+                    </svg>
+                    <p className="text-4xl font-bold text-gray-500">0</p>
+                </div>
+                <p className="mt-4 text-sm text-gray-500">No Data</p>
+            </div>
+        );
+    }
+
+    const data = [
+        { value: bertanya, color: '#22d3ee', label: 'Bertanya' }, // cyan-400
+        { value: menjawab, color: '#60a5fa', label: 'Menjawab' }, // blue-400
+        { value: menambahkan, color: '#a78bfa', label: 'Menambahkan' }, // violet-400
+    ];
+
+    // We stack layers to create a 3D extrusion effect
+    // Layers 0-4 are the "sides" (darker), Layer 5 is the "top" (bright)
+    const layers = [0, 1, 2, 3, 4, 5];
+
+    return (
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full">
+            <div className="relative w-48 h-48 flex-shrink-0" style={{ perspective: '1000px' }}>
+                <div className="relative w-full h-full preserve-3d" style={{ transform: 'rotateX(55deg) rotateZ(0deg)', transformStyle: 'preserve-3d' }}>
+                    {/* Render stacked layers for 3D effect */}
+                    {layers.map((i) => {
+                        const isTop = i === layers.length - 1;
+                        const zOffset = i * 2; // Distance between layers
+                        const brightness = isTop ? 110 : 60 + (i * 5); // Gradient brightness for side
+                        
+                        return (
+                            <div 
+                                key={i} 
+                                className="absolute inset-0" 
+                                style={{ transform: `translateZ(${zOffset}px)` }}
+                            >
+                                <PieRingLayer 
+                                    data={data} 
+                                    radius={40} 
+                                    total={total} 
+                                    brightness={brightness}
+                                />
+                            </div>
+                        );
+                    })}
+                    
+                    {/* Center Text Floating above */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ transform: `translateZ(${layers.length * 2 + 10}px) rotateX(-55deg)` }}>
+                        <p className="text-4xl font-bold text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">{total}</p>
+                        <p className="text-center text-xs text-cyan-200 -mt-1 drop-shadow-md">Actions</p>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Legend */}
+            <div className="flex flex-col gap-2 text-sm">
+                {data.map(slice => (
+                     <div key={slice.label} className="flex items-center gap-2">
+                        <div className="relative w-4 h-4">
+                            <div className="absolute inset-0 rounded-sm transform skew-x-12" style={{ backgroundColor: slice.color, opacity: 0.7 }}></div>
+                            <div className="absolute inset-0 rounded-sm transform -skew-x-6 scale-90 border border-white/20" style={{ backgroundColor: slice.color }}></div>
+                        </div>
+                        <span className="text-gray-300">{slice.label}:</span>
+                        <span className="font-bold text-white">{slice.value}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 };
+
+// New Sunburst Chart Component for Tasks
+const TaskSunburstChart: React.FC<{ tasks: { selesai: number } }> = ({ tasks }) => {
+    const total = 10; // From constants
+    const completed = tasks.selesai;
+    const percentage = Math.round((completed / total) * 100);
+    
+    // Generate segments
+    const segments = [];
+    for (let i = 0; i < total; i++) {
+        const startAngle = (i * 360) / total;
+        const endAngle = ((i + 1) * 360) / total;
+        // Gap adjustment
+        const gap = 2;
+        const isCompleted = i < completed;
+        
+        segments.push({
+            start: startAngle + gap,
+            end: endAngle - gap,
+            color: isCompleted ? (i % 2 === 0 ? '#22d3ee' : '#3b82f6') : 'rgba(75, 85, 99, 0.3)',
+            highlight: isCompleted
+        });
+    }
+
+    // Helper to create arc path
+    const createArc = (start: number, end: number, innerR: number, outerR: number) => {
+        const startRad = (start - 90) * Math.PI / 180;
+        const endRad = (end - 90) * Math.PI / 180;
+        const x1 = 50 + outerR * Math.cos(startRad);
+        const y1 = 50 + outerR * Math.sin(startRad);
+        const x2 = 50 + outerR * Math.cos(endRad);
+        const y2 = 50 + outerR * Math.sin(endRad);
+        const x3 = 50 + innerR * Math.cos(endRad);
+        const y3 = 50 + innerR * Math.sin(endRad);
+        const x4 = 50 + innerR * Math.cos(startRad);
+        const y4 = 50 + innerR * Math.sin(startRad);
+        
+        return `M ${x1} ${y1} A ${outerR} ${outerR} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 0 0 ${x4} ${y4} Z`;
+    };
+
+    return (
+        <div className="relative w-48 h-48 flex items-center justify-center">
+             <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_10px_rgba(0,255,255,0.3)]">
+                {segments.map((seg, idx) => (
+                    <path
+                        key={idx}
+                        d={createArc(seg.start, seg.end, 25, 45)}
+                        fill={seg.color}
+                        className={`transition-all duration-500 ${seg.highlight ? 'hover:brightness-125' : ''}`}
+                        style={{ 
+                            filter: seg.highlight ? 'drop-shadow(0 0 2px rgba(34, 211, 238, 0.5))' : 'none',
+                            opacity: 0.9 
+                        }}
+                    />
+                ))}
+                {/* Inner decorative ring */}
+                 <circle cx="50" cy="50" r="20" fill="transparent" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-3xl font-bold text-white drop-shadow-md">{calculateTaskScore(tasks)}</span>
+                <span className="text-[10px] text-cyan-300 uppercase tracking-wider">Score</span>
+            </div>
+        </div>
+    );
+}
+
 
 // New Component for the 3D bar chart
 const AllStudentsRankChart: React.FC<{ students: Student[], selectedStudentId?: number }> = ({ students, selectedStudentId }) => {
@@ -234,30 +360,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, students }) => {
                         </StatCard>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <StatCard title="Proactiveness" className="flex justify-center items-center">
-                                <ProactivenessRadar proactiveness={studentToDisplay.proactiveness} />
+                            <StatCard title="Proaktif" className="flex flex-col items-center justify-center">
+                                <Proactiveness3DPieChart proactiveness={studentToDisplay.proactiveness} />
                             </StatCard>
-                            <StatCard title="Task Score" className="flex justify-center items-center">
-                                <div className="relative w-40 h-40 flex items-center justify-center">
-                                    <svg className="absolute w-full h-full" viewBox="0 0 100 100">
-                                        <circle cx="50" cy="50" r="45" stroke="rgba(0, 255, 255, 0.2)" strokeWidth="10" fill="none" />
-                                        <circle 
-                                            cx="50" cy="50" r="45" 
-                                            stroke="url(#taskGradient)" strokeWidth="10" fill="none"
-                                            strokeDasharray={2 * Math.PI * 45}
-                                            strokeDashoffset={(2 * Math.PI * 45) * (1 - taskScore / 100)}
-                                            transform="rotate(-90 50 50)"
-                                            strokeLinecap="round"
-                                        />
-                                        <defs>
-                                            <linearGradient id="taskGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                <stop offset="0%" stopColor="#22d3ee" />
-                                                <stop offset="100%" stopColor="#3b82f6" />
-                                            </linearGradient>
-                                        </defs>
-                                    </svg>
-                                    <p className="text-4xl font-bold text-white">{taskScore}</p>
-                                </div>
+                            <StatCard title="Nilai Tugas" className="flex flex-col items-center justify-center">
+                                <TaskSunburstChart tasks={studentToDisplay.tasks} />
                             </StatCard>
                         </div>
                     </div>

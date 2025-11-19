@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Student } from '../../types';
 import Table3D, { TableRow3D, TableCell } from '../common/Table3D';
@@ -56,7 +57,7 @@ const AbsenteeismMenu: React.FC<AbsenteeismMenuProps> = ({ students, onUpdateStu
         <Table3D headers={['Name', 'NIM', 'Izin', 'Sakit', 'Hadir (Actual)', 'Total Meetings', 'Absensi Score']}>
             {localStudents.map(student => (
                 <TableRow3D key={student.id}>
-                    <TableCell><p className="font-semibold">{student.name}</p></TableCell>
+                    <TableCell><p className="text-gray-400">{student.name}</p></TableCell>
                     <TableCell><p className="text-gray-400">{student.nim}</p></TableCell>
                     <TableCell>
                       {isEditing ? <input type="number" value={student.attendance.izin} onChange={(e) => handleInputChange(student.id, 'izin', e.target.value)} className="w-16 bg-gray-700/50 p-1 rounded text-white"/> : <p className="text-gray-400">{student.attendance.izin}</p>}

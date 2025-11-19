@@ -9,19 +9,29 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [studentsData, setStudentsData] = useState<Student[]>(INITIAL_STUDENTS_DATA);
   const [loginError, setLoginError] = useState<string>('');
+  const [isExiting, setIsExiting] = useState(false);
 
   const handleLogin = useCallback((username: string, password: string): void => {
     setLoginError('');
+
+    const loginSuccess = (user: User) => {
+        setIsExiting(true);
+        setTimeout(() => {
+            setCurrentUser(user);
+            setIsExiting(false);
+        }, 1000); // Duration of the fly-out animation
+    };
+
     // Check for teacher
     if (username === TEACHER_CREDENTIALS.username && password === TEACHER_CREDENTIALS.password) {
-      setCurrentUser({ username: 'major', role: 'teacher' });
+      loginSuccess({ username: 'major', role: 'teacher' });
       return;
     }
 
     // Check for student
     const student = INITIAL_STUDENTS_DATA.find(s => s.name === username && s.nim === password);
     if (student) {
-      setCurrentUser({ username: student.name, role: 'student', studentData: student });
+      loginSuccess({ username: student.name, role: 'student', studentData: student });
       return;
     }
 
@@ -44,9 +54,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1a] to-[#0f0c29] text-gray-200 font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0f1a] to-[#0f0c29] text-gray-200 font-sans overflow-hidden" style={{ perspective: '2000px' }}>
       {!currentUser ? (
-        <Login onLogin={handleLogin} error={loginError} />
+        <Login onLogin={handleLogin} error={loginError} isExiting={isExiting} />
       ) : (
         <Dashboard
           user={currentUser}

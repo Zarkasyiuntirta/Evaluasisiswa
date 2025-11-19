@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Student } from '../../types';
 import Table3D, { TableRow3D, TableCell } from '../common/Table3D';
@@ -52,7 +53,7 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ students, onUpdateStudents }) => {
                 const incomplete = TOTAL_TASKS - student.tasks.selesai;
                 return (
                     <TableRow3D key={student.id}>
-                        <TableCell><p className="font-semibold">{student.name}</p></TableCell>
+                        <TableCell><p className="text-gray-400">{student.name}</p></TableCell>
                         <TableCell><p className="text-gray-400">{student.nim}</p></TableCell>
                         <TableCell>
                             {isEditing ? <input type="number" value={student.tasks.selesai} onChange={(e) => handleInputChange(student.id, e.target.value)} className="w-20 bg-gray-700/50 p-1 rounded text-white" max={TOTAL_TASKS}/> : <p className="text-gray-400">{student.tasks.selesai}</p>}

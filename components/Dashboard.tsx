@@ -50,7 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, students, onUpdateStudents,
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden animate-zoom-in-3d">
       {/* Sidebar */}
       <aside className="w-64 bg-black/20 backdrop-blur-lg flex-shrink-0 p-4 border-r border-cyan-400/20">
         <div className="flex flex-col h-full">
