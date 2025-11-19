@@ -51,6 +51,19 @@
       .animate-zoom-in-3d {
         animation: zoom-in-3d 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
+      
+      /* NEW: Neon Light Pulse (Light On/Off Effect) */
+      @keyframes pulse-light {
+        0%, 100% {
+          filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.5)) brightness(1);
+        }
+        50% {
+          filter: drop-shadow(0 0 15px rgba(34, 211, 238, 1)) brightness(1.2);
+        }
+      }
+      .animate-pulse-light {
+        animation: pulse-light 3s ease-in-out infinite;
+      }
 
       body {
         margin: 0;

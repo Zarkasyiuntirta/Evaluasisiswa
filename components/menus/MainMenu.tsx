@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { User, Student } from '../../types';
-import { calculateSummaryScore, calculateExamAverage, calculateTaskScore } from '../../utils/calculations';
+import { calculateSummaryScore, calculateExamAverage, calculateTaskScore, calculateAbsensiScore } from '../../utils/calculations';
 
 interface MainMenuProps {
   user: User;
@@ -88,8 +88,9 @@ const Proactiveness3DPieChart: React.FC<{ proactiveness: Student['proactiveness'
     const layers = [0, 1, 2, 3, 4, 5];
 
     return (
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full">
-            <div className="relative w-48 h-48 flex-shrink-0" style={{ perspective: '1000px' }}>
+        <div className="flex flex-col items-center justify-center gap-6 w-full">
+            {/* Chart with Pulse Animation */}
+            <div className="relative w-48 h-48 flex-shrink-0 animate-pulse-light" style={{ perspective: '1000px' }}>
                 <div className="relative w-full h-full preserve-3d" style={{ transform: 'rotateX(55deg) rotateZ(0deg)', transformStyle: 'preserve-3d' }}>
                     {/* Render stacked layers for 3D effect */}
                     {layers.map((i) => {
@@ -116,13 +117,13 @@ const Proactiveness3DPieChart: React.FC<{ proactiveness: Student['proactiveness'
                     {/* Center Text Floating above */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ transform: `translateZ(${layers.length * 2 + 10}px) rotateX(-55deg)` }}>
                         <p className="text-4xl font-bold text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">{total}</p>
-                        <p className="text-center text-xs text-cyan-200 -mt-1 drop-shadow-md">Actions</p>
+                        <p className="text-center text-xs text-cyan-200 -mt-1 drop-shadow-md">Aksi</p>
                     </div>
                 </div>
             </div>
             
-            {/* Legend */}
-            <div className="flex flex-col gap-2 text-sm">
+            {/* Legend - Centered below */}
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
                 {data.map(slice => (
                      <div key={slice.label} className="flex items-center gap-2">
                         <div className="relative w-4 h-4">
@@ -178,7 +179,7 @@ const TaskSunburstChart: React.FC<{ tasks: { selesai: number } }> = ({ tasks }) 
     };
 
     return (
-        <div className="relative w-48 h-48 flex items-center justify-center">
+        <div className="relative w-48 h-48 flex items-center justify-center animate-pulse-light">
              <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_0_10px_rgba(0,255,255,0.3)]">
                 {segments.map((seg, idx) => (
                     <path
@@ -197,7 +198,7 @@ const TaskSunburstChart: React.FC<{ tasks: { selesai: number } }> = ({ tasks }) 
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-3xl font-bold text-white drop-shadow-md">{calculateTaskScore(tasks)}</span>
-                <span className="text-[10px] text-cyan-300 uppercase tracking-wider">Score</span>
+                <span className="text-[10px] text-cyan-300 uppercase tracking-wider">Nilai</span>
             </div>
         </div>
     );
@@ -219,6 +220,59 @@ const AllStudentsRankChart: React.FC<{ students: Student[], selectedStudentId?: 
 
     return (
         <StatCard title="Class Ranking Overview" className="h-full flex flex-col">
+            <div className="w-full flex-grow flex items-end justify-center gap-1 px-4 pt-8 pb-4" style={{ perspective: '1000px' }}>
+                {studentScores.map((student) => {
+                    const barHeight = student.score;
+                    const isSelected = student.id === selectedStudentId;
+
+                    return (
+                        <div key={student.id} className="group relative h-full flex-1 max-w-[40px] min-w-[15px] flex items-end justify-center">
+                             {/* Tooltip */}
+                            <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-gray-900/80 backdrop-blur-sm p-2 rounded-lg shadow-lg border border-cyan-500/50 pointer-events-none z-10 w-32 text-center">
+                                <img src={student.picture} alt={student.name} className="w-12 h-12 rounded-full mx-auto mb-2 border-2 border-cyan-400"/>
+                                <p className="text-white font-bold text-sm truncate">{student.name}</p>
+                                <p className="text-cyan-300 text-lg font-bold">{student.score}</p>
+                            </div>
+
+                            <div
+                                className="relative w-full transition-all duration-500 ease-out group-hover:brightness-125"
+                                style={{
+                                    height: `${barHeight}%`,
+                                    transformStyle: 'preserve-3d',
+                                    transform: 'rotateX(-20deg)'
+                                }}
+                            >
+                                {/* Front face */}
+                                <div className={`absolute inset-0 transition-colors duration-300 transform ${isSelected ? 'bg-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.8)]' : 'bg-gradient-to-b from-cyan-400 to-blue-600'}`} style={{transform: 'translateZ(7.5px)'}}></div>
+                                {/* Top face */}
+                                <div
+                                    className={`absolute left-0 top-0 w-full h-[15px] transition-colors duration-300 ${isSelected ? 'bg-cyan-100' : 'bg-cyan-200'}`}
+                                    style={{ transform: 'rotateX(90deg) translateZ(7.5px)' }}
+                                ></div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </StatCard>
+    );
+};
+
+// New Component for the Attendance 3D bar chart (Identical styling)
+const AttendanceRankChart: React.FC<{ students: Student[], selectedStudentId?: number }> = ({ students, selectedStudentId }) => {
+    const studentScores = useMemo(() => {
+        return students
+            .map(s => ({
+                id: s.id,
+                name: s.name,
+                score: calculateAbsensiScore(s.attendance.hadir),
+                picture: s.picture
+            }))
+            .sort((a, b) => b.score - a.score);
+    }, [students]);
+
+    return (
+        <StatCard title="Nilai Daftar Hadir" className="h-full flex flex-col">
             <div className="w-full flex-grow flex items-end justify-center gap-1 px-4 pt-8 pb-4" style={{ perspective: '1000px' }}>
                 {studentScores.map((student) => {
                     const barHeight = student.score;
@@ -373,6 +427,10 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, students }) => {
              {/* Bottom Section: All Students Chart */}
             <div className="flex-grow min-h-[300px]">
                 <AllStudentsRankChart students={students} selectedStudentId={selectedStudentId} />
+            </div>
+             {/* Bottom Section: Attendance Rank Chart */}
+             <div className="flex-grow min-h-[300px]">
+                <AttendanceRankChart students={students} selectedStudentId={selectedStudentId} />
             </div>
         </div>
     );
