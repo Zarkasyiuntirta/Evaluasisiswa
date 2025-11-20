@@ -424,13 +424,13 @@ const MainMenu: React.FC<MainMenuProps> = ({ user, students }) => {
                     </div>
                 </div>
             </div>
-             {/* Bottom Section: All Students Chart */}
-            <div className="flex-grow min-h-[300px]">
-                <AllStudentsRankChart students={students} selectedStudentId={selectedStudentId} />
-            </div>
              {/* Bottom Section: Attendance Rank Chart */}
              <div className="flex-grow min-h-[300px]">
                 <AttendanceRankChart students={students} selectedStudentId={selectedStudentId} />
+            </div>
+             {/* Bottom Section: All Students Chart */}
+            <div className="flex-grow min-h-[300px]">
+                <AllStudentsRankChart students={students} selectedStudentId={selectedStudentId} />
             </div>
         </div>
     );
